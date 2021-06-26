@@ -1,0 +1,13 @@
+*{
+    margin: 0;
+    padding: 0;
+}
+  /*CSS Body*/
+body{
+    font-family: "Poppins", sans-serif ;
+    background-color: #acc9ff;
+}
+.title:hover{
+    text-decoration: underline;
+    font-style: italic;
+}
