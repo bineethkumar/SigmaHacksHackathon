@@ -33,6 +33,8 @@ const loadInitialCardData = () => {
         globalStore.push(taskData);
     })
 };
+const updateLocalStorage = () =>
+  localStorage.setItem("TaskMan", JSON.stringify({ cards: globalStore }));
 
 const saveChanges = () => {
     const taskData = {
@@ -90,53 +92,60 @@ const editTask = (event) => {
   } else {
     parentNode = event.target.parentNode.parentNode.parentNode;
   }
-  taskTitle = parentNode.childNodes[3].childNodes[3];
-  taskDescription = parentNode.childNodes[3].childNodes[5];
-  submitButton = parentNode.childNodes[5].childNodes[1];
-  taskType = parentNode.childNodes[3].childNodes[7].childNodes[1];
+  taskTitle = parentNode.childNodes[5].childNodes[1];
+  taskDescription = parentNode.childNodes[5].childNodes[3];
+  submitButton = parentNode.childNodes[7].childNodes[1];
+  taskType = parentNode.childNodes[5].childNodes[5];
 
   taskTitle.setAttribute("contenteditable", "true");
   taskDescription.setAttribute("contenteditable", "true");
   taskType.setAttribute("contenteditable", "true");
   submitButton.setAttribute("onclick", "saveEdit.apply(this, arguments)");
-  submitButton.setAttribute("onclick", "saveEdit.apply(this, arguments)");
-  submitButton.removeAttribute("data-bs-toggle");
-  submitButton.removeAttribute("data-bs-target");
   submitButton.innerHTML = "Save Changes";
 };
 //for saving an edited task
 const saveEdit = (event) => {
   event = window.event;
   const targetID = event.target.id;
-  const parentNode = event.target.parentNode.parentNode;
-  console.log(parentNode.childNodes);
-  const taskTitle = parentNode.childNodes[3].childNodes[3];
-  const taskDescription = parentNode.childNodes[3].childNodes[5];
-  const submitButton = parentNode.childNodes[5].childNodes[1];
-  const taskType = parentNode.childNodes[3].childNodes[7].childNodes[1];
+  const type = event.target.tagName;
+  let parentNode;
+  let taskTitle;
+  let taskDescription;
+  let taskType;
+  let submitButton;
+  if (type === "BUTTON") {
+    parentNode = event.target.parentNode.parentNode;
+  } else {
+    parentNode = event.target.parentNode.parentNode.parentNode;
+  }
+  taskTitle = parentNode.childNodes[5].childNodes[1];
+  taskDescription = parentNode.childNodes[5].childNodes[3];
+  submitButton = parentNode.childNodes[7].childNodes[1];
+  taskType = parentNode.childNodes[5].childNodes[5];
+
   const updateData = {
     taskTitle: taskTitle.innerHTML,
     taskDescription: taskDescription.innerHTML,
     taskType: taskType.innerHTML,
   };
-  let stateCopy = state.taskList;
-  stateCopy = stateCopy.map((task) =>
-    task.id === targetID ? {
-          id: task.id,
-          title: updateData.taskTitle,
-          description: updateData.taskDescription,
-          type: updateData.taskType,
-          url: task.url,
-        } : task);
-
-  state.taskList = stateCopy;
-  updateLocalStorage();
+  
+  globalStore = globalStore.map((task) => {
+    if(task.id === targetID){
+      return {
+        id : task.id,
+        imageUrl : task.imageUrl,
+        taskTitle : updateData.taskTitle,
+        taskType : updateData.taskType,
+        taskDescription : updateData.taskDescription,
+      }
+    };
+    return;
+  });
+  updateLocalStorage();   
   taskTitle.setAttribute("contenteditable", "false");
   taskDescription.setAttribute("contenteditable", "false");
   taskType.setAttribute("contenteditable", "false");
-  submitButton.setAttribute("onclick", "openTask.apply(this, arguments)");
-  submitButton.setAttribute("data-bs-toggle", "modal");
-  submitButton.setAttribute("data-bs-target", "#showTask");
+  submitButton.removeAttribute("onclick");
   submitButton.innerHTML = "Open Task";
 };
 //for searching a task
