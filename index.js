@@ -30,7 +30,7 @@ const loadInitialCardData = () => {
 
     cards.map((cardObject) => { 
         taskContainer.insertAdjacentHTML("beforeend",generateNewCard(cardObject));
-        globalStore.push(taskData);
+        globalStore.push(cardObject);
     })
 };
 const updateLocalStorage = () =>
@@ -57,9 +57,9 @@ const deleteCard = (event) => {
     const targetID = event.target.id;
     const tagname = event.target.tagName;
 
-    const newUpdatedArray = globalStore.filter((cardObject) => cardObject.id !== targetID);
-    localStorage.setItem("TaskMan",JSON.stringify({cards:globalStore}));
-
+    globalStore = globalStore.filter((cardObject) => cardObject.id !== targetID);
+    //localStorage.setItem("TaskMan",JSON.stringify({cards:globalStore}));
+    updateLocalStorage();
     if(tagname=== "BUTTON"){
         return taskContainer.removeChild(event.target.parentNode.parentNode.parentNode);
     }
@@ -70,13 +70,7 @@ const deleteCard = (event) => {
     //taskContainer.removeChild(document.getElementById(targetID));
 
 };
-//for opening a task
-const openTask = (event) => {
-  event = window.event;
-  const targetID = event.target.id;
-  const getTask = state.taskList.filter(({targetID}) => id === event.target.id);
-  taskModal.innerHTML = htmlModalContent(getTask[0]);
-};
+
 //for editing an existing task
 const editTask = (event) => {
   event = window.event;
@@ -109,19 +103,15 @@ const saveEdit = (event) => {
   const targetID = event.target.id;
   const type = event.target.tagName;
   let parentNode;
-  let taskTitle;
-  let taskDescription;
-  let taskType;
-  let submitButton;
   if (type === "BUTTON") {
     parentNode = event.target.parentNode.parentNode;
   } else {
     parentNode = event.target.parentNode.parentNode.parentNode;
   }
-  taskTitle = parentNode.childNodes[5].childNodes[1];
-  taskDescription = parentNode.childNodes[5].childNodes[3];
-  submitButton = parentNode.childNodes[7].childNodes[1];
-  taskType = parentNode.childNodes[5].childNodes[5];
+  let taskTitle = parentNode.childNodes[5].childNodes[1];
+  let taskDescription = parentNode.childNodes[5].childNodes[3];
+  let submitButton = parentNode.childNodes[7].childNodes[1];
+  let taskType = parentNode.childNodes[5].childNodes[5];
 
   const updateData = {
     taskTitle: taskTitle.innerHTML,
@@ -137,9 +127,9 @@ const saveEdit = (event) => {
         taskTitle : updateData.taskTitle,
         taskType : updateData.taskType,
         taskDescription : updateData.taskDescription,
-      }
-    };
-    return;
+      };
+    }
+    return task;
   });
   updateLocalStorage();   
   taskTitle.setAttribute("contenteditable", "false");
@@ -150,16 +140,23 @@ const saveEdit = (event) => {
 };
 //for searching a task
 const searchTask = (event) => {
-  event = window.event;
-  while (taskContents.firstChild) {
-    taskContents.removeChild(taskContents.firstChild);
+  if(!event) event = window.event;
+  while (taskContainer.firstChild) {
+    taskContainer.removeChild(taskContainer.firstChild);
   }
 
-  const resultData = state.taskList.filter(({ title }) =>
-    title.includes(event.target.value)
+  const resultData = state.globalStore.filter(({ task__title }) =>
+    task__title.includes(event.target.value)
   );
 
-  resultData.map((cardData) => {
-    taskContents.insertAdjacentHTML("beforeend", htmlTaskContent(cardData));
+  resultData.map((taskData) => {
+    taskContainer.insertAdjacentHTML("beforeend", taskData(taskData));
   });
+};
+//for opening a task
+const openTask = (event) => {
+  event = window.event;
+  const targetID = event.target.id;
+  const getTask = state.taskList.filter(({targetID}) => id === event.target.id);
+  taskModal.innerHTML = htmlModalContent(getTask[0]);
 };
